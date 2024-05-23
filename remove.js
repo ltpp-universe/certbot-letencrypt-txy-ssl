@@ -1,8 +1,44 @@
+const fs = require('fs');
+const path = require('path');
 const https = require("https");
 const crypto = require("crypto");
-
+const tmp_path = '/tmp';
 const [cmd_path, run_file_path, SECRET_ID, SECRET_KEY] = process.argv;
 const certbot_domain = process.env.CERTBOT_DOMAIN;
+const record_id_file_path = '/tmp/record_id.txt';
+
+function deleteFile(file_path = tmp_path) {
+    try {
+        const absolute_path = path.resolve(file_path);
+        if (absolute_path.indexOf(tmp_path) !== 0) {
+            return;
+        }
+        if (fs.existsSync(absolute_path)) {
+            const stats = fs.statSync(absolute_path);
+            if (stats.isFile()) {
+                fs.unlinkSync(absolute_path);
+            } else if (stats.isDirectory()) {
+                fs.rmSync(absolute_path, { recursive: true, force: true });
+            }
+        }
+    } catch (error) {
+        console.error('deleteFile error:', error);
+    }
+}
+
+function readFile(file_path = tmp_path) {
+    try {
+        const absolute_path = path.resolve(file_path);
+        if (absolute_path.indexOf(tmp_path) !== 0) {
+            return;
+        }
+        const data = fs.readFileSync(absolute_path, 'utf8');
+        return data;
+    } catch (error) {
+        console.error(`readFile error:${error}`);
+    }
+    return '';
+}
 
 function getDomain(domain = "") {
     const domain_parts = domain.split('.');
@@ -32,8 +68,18 @@ function getDate(timestamp) {
     return `${year}-${month}-${day}`;
 }
 
+function getNumber(str = "") {
+    let res = 0;
+    try {
+        res = parseInt(str);
+    } catch (error) {
+        console.error(`getNumber error:${error}`);
+    }
+    return res;
+}
+
 const domain_list = getDomain(certbot_domain);
-const sub_domain = `_acme-challenge.${domain_list[0]}`;
+const sub_domain = domain_list[1];
 const host = "dnspod.tencentcloudapi.com";
 const service = "dnspod";
 const region = "";
@@ -41,9 +87,11 @@ const action = "DeleteRecord";
 const version = "2021-03-23";
 const timestamp = parseInt(String(new Date().getTime() / 1000));
 const date = getDate(timestamp);
+const record_id = getNumber(readFile(record_id_file_path));
 
 const payload = {
-    Domain: sub_domain
+    Domain: sub_domain,
+    RecordId: record_id
 };
 
 const payload_json = JSON.stringify(payload);
@@ -123,7 +171,7 @@ const options = {
     headers,
 };
 
-function add() {
+function remove() {
     const req = https.request(options, (res) => {
         let data = "";
         res.on("data", (chunk) => {
@@ -135,10 +183,11 @@ function add() {
         });
     });
     req.on("error", (error) => {
-        console.error(error);
+        console.error(`remove error:${error}`);
     });
     req.write(payload_json);
     req.end();
 }
 
-add();
+deleteFile(record_id_file_path);
+remove();

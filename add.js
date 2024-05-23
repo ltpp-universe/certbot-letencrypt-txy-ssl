@@ -1,5 +1,8 @@
+const fs = require('fs');
+const path = require('path');
 const https = require("https");
 const crypto = require("crypto");
+const tmp_path = '/tmp';
 const record_line = "默认";
 const record_type = "TXT";
 const ttl = 3600;
@@ -8,6 +11,48 @@ const remark = "LTPP-SSL";
 const [cmd_path, run_file_path, SECRET_ID, SECRET_KEY, SLEEP_TIME] = process.argv;
 const certbot_domain = process.env.CERTBOT_DOMAIN;
 const certbot_validation = process.env.CERTBOT_VALIDATION;
+const record_id_file_path = '/tmp/record_id.txt';
+
+function sleep(time) {
+    return new Promise((re) => {
+        setTimeout(re, time);
+    });
+}
+
+function deleteFile(file_path = tmp_path) {
+    try {
+        const absolute_path = path.resolve(file_path);
+        if (absolute_path.indexOf(tmp_path) !== 0) {
+            return;
+        }
+        if (fs.existsSync(absolute_path)) {
+            const stats = fs.statSync(absolute_path);
+            if (stats.isFile()) {
+                fs.unlinkSync(absolute_path);
+            } else if (stats.isDirectory()) {
+                fs.rmSync(absolute_path, { recursive: true, force: true });
+            }
+        }
+    } catch (error) {
+        console.error('deleteFile error:', error);
+    }
+}
+
+function writeToFile(file_path = tmp_path, data = '') {
+    const absolute_path = path.resolve(file_path);
+    if (absolute_path.indexOf(tmp_path) !== 0) {
+        return;
+    }
+    const directory_path = path.dirname(absolute_path);
+    try {
+        if (!fs.existsSync(directory_path)) {
+            fs.mkdirSync(directory_path, { recursive: true });
+        }
+        fs.writeFileSync(absolute_path, data?.toString() || '');
+    } catch (error) {
+        console.error('writeToFile error:', error);
+    }
+}
 
 function getDomain(domain = "") {
     const domain_parts = domain.split('.');
@@ -144,22 +189,25 @@ function add() {
 
         res.on("end", () => {
             console.log(data);
+            try {
+                const record_id = JSON.parse(data)?.Response?.RecordId;
+                writeToFile(record_id_file_path, record_id);
+            } catch (error) {
+                console.error(`add error:${error}`);
+            }
         });
     });
     req.on("error", (error) => {
-        console.error(error);
+        console.error(`add error:${error}`);
     });
     req.write(payload_json);
     req.end();
 }
 
-function sleep(time) {
-    return new Promise((re) => {
-        setTimeout(re, time);
-    });
-}
+
 
 (async () => {
+    deleteFile(record_id_file_path);
     add();
     await sleep(SLEEP_TIME * 1000);
 })();

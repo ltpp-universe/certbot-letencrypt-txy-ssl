@@ -9,8 +9,6 @@ const [cmd_path, run_file_path, SECRET_ID, SECRET_KEY, SLEEP_TIME] = process.arg
 const certbot_domain = process.env.CERTBOT_DOMAIN;
 const certbot_validation = process.env.CERTBOT_VALIDATION;
 
-console.log(`certbot_domain:${certbot_domain}`, `certbot_validation:${certbot_validation}`, `process.argv:${process.argv}`);
-
 function getDomain(domain = "") {
     const domain_parts = domain.split('.');
     if (domain_parts.length >= 2) {
@@ -137,7 +135,7 @@ const options = {
     headers,
 };
 
-function send() {
+function add() {
     const req = https.request(options, (res) => {
         let data = "";
         res.on("data", (chunk) => {
@@ -162,6 +160,6 @@ function sleep(time) {
 }
 
 (async () => {
-    send();
+    add();
     await sleep(SLEEP_TIME * 1000);
 })();

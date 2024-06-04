@@ -13,13 +13,13 @@ const certbot_domain = process.env.CERTBOT_DOMAIN;
 const certbot_validation = process.env.CERTBOT_VALIDATION;
 const record_id_file_path = '/tmp/record_id.txt';
 
-function sleep(time) {
+function sleep (time) {
     return new Promise((re) => {
         setTimeout(re, time);
     });
 }
 
-function deleteFile(file_path = tmp_path) {
+function deleteFile (file_path = tmp_path) {
     try {
         const absolute_path = path.resolve(file_path);
         if (absolute_path.indexOf(tmp_path) !== 0) {
@@ -38,7 +38,7 @@ function deleteFile(file_path = tmp_path) {
     }
 }
 
-function writeToFile(file_path = tmp_path, data = '') {
+function writeToFile (file_path = tmp_path, data = '') {
     const absolute_path = path.resolve(file_path);
     if (absolute_path.indexOf(tmp_path) !== 0) {
         return;
@@ -54,7 +54,7 @@ function writeToFile(file_path = tmp_path, data = '') {
     }
 }
 
-function getDomain(domain = "") {
+function getDomain (domain = "") {
     const domain_parts = domain.split('.');
     if (domain_parts.length >= 2) {
         const root_domain = domain_parts.slice(-2).join('.');
@@ -64,17 +64,17 @@ function getDomain(domain = "") {
     return ['', domain];
 }
 
-function sha256(message, secret = "", encoding) {
+function sha256 (message, secret = "", encoding) {
     const hmac = crypto.createHmac("sha256", secret);
     return hmac.update(message).digest(encoding);
 }
 
-function getHash(message, encoding = "hex") {
+function getHash (message, encoding = "hex") {
     const hash = crypto.createHash("sha256");
     return hash.update(message).digest(encoding);
 }
 
-function getDate(timestamp) {
+function getDate (timestamp) {
     const date = new Date(timestamp * 1000);
     const year = date.getUTCFullYear();
     const month = ("0" + (date.getUTCMonth() + 1)).slice(-2);
@@ -83,7 +83,7 @@ function getDate(timestamp) {
 }
 
 const domain_list = getDomain(certbot_domain);
-const sub_domain = `_acme-challenge.${domain_list[0]}`;
+const sub_domain = `_acme-challenge${domain_list[0] ? ('.' + domain_list[0]) : domain_list[0]}`;
 const domain = domain_list[1];
 const host = "dnspod.tencentcloudapi.com";
 const service = "dnspod";
@@ -180,7 +180,7 @@ const options = {
     headers,
 };
 
-function add() {
+function add () {
     const req = https.request(options, (res) => {
         let data = "";
         res.on("data", (chunk) => {

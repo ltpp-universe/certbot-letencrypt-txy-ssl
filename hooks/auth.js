@@ -12,11 +12,6 @@ const certbotDomain = process.env.CERTBOT_DOMAIN;
 const certbotValidation = process.env.CERTBOT_VALIDATION;
 
 async function authenticate() {
-  console.log(`DEBUG: SecretId length=${secretId ? secretId.length : 0}`);
-  console.log(`DEBUG: SecretKey length=${secretKey ? secretKey.length : 0}`);
-  console.log(`DEBUG: SecretId=${secretId}`);
-  console.log(`DEBUG: SecretKey=${secretKey}`);
-
   if (!secretId || !secretKey) {
     console.error(
       'Error: TENCENT_SECRET_ID and TENCENT_SECRET_KEY must be set',

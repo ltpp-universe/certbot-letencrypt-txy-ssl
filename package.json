@@ -1,0 +1,23 @@
+{
+  "name": "certbot-letencrypt-txy-ssl",
+  "version": "1.0.0",
+  "description": "Automatic SSL certificate issuance using Certbot with Tencent Cloud DNS validation",
+  "main": "index.js",
+  "scripts": {
+    "issue": "node index.js",
+    "renew": "node index.js --renew"
+  },
+  "keywords": [
+    "ssl",
+    "certbot",
+    "letsencrypt",
+    "tencent-cloud",
+    "dns",
+    "certificate"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

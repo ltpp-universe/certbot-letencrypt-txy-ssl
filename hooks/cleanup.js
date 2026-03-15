@@ -8,6 +8,7 @@ const { removeDnsRecord } = require('../lib/dns');
 const secretId = process.env.TENCENT_SECRET_ID;
 const secretKey = process.env.TENCENT_SECRET_KEY;
 const certbotDomain = process.env.CERTBOT_DOMAIN;
+const certbotValidation = process.env.CERTBOT_VALIDATION;
 
 async function cleanup() {
   if (!secretId || !secretKey) {
@@ -23,10 +24,13 @@ async function cleanup() {
   }
 
   try {
+    console.log(`Validation: ${certbotValidation}`);
+
     await removeDnsRecord({
       secretId: secretId,
       secretKey: secretKey,
       domain: certbotDomain,
+      validation: certbotValidation,
     });
 
     console.log('DNS record deleted successfully');

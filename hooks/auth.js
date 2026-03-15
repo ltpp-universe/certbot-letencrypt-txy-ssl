@@ -26,6 +26,7 @@ async function authenticate() {
 
   try {
     console.log(`Creating DNS record for ${certbotDomain}...`);
+    console.log(`Validation: ${certbotValidation}`);
 
     const recordId = await addDnsRecord({
       secretId: secretId,
